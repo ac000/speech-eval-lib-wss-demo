@@ -1,0 +1,195 @@
+<html>
+<head>
+<meta http-equiv = "Content-Type" content = "text/html; charset=UTF-8">
+<title>Speech Comparison</title>
+
+<script language = "javascript" type = "text/javascript">
+
+/*
+ * CHANGE ME 
+ */
+var ws_server = "wss://localhost:12345/";
+var ws_connected = false;
+var ws;
+
+/* Initialise the WebSocket */
+do_connect();
+
+function do_connect() {
+	if (ws_connected)
+		return;
+
+	ws = new WebSocket(ws_server);
+
+	ws.onopen = function() {
+		document.getElementById("ws_status").innerHTML = "Connected";
+		document.getElementById("ws_status").style.color = "#008800";
+		ws_connected = true;
+		console.log("WebSocket Connected");
+	};
+
+	ws.onmessage = function(m) {
+		var msg = JSON.parse(m.data);
+		var msg_type = "";
+
+		console.log(m.data);
+
+		if (msg.msg_type == "error")
+			msg_type = "[ERR]";
+		else if (msg.msg_type == "info")
+			msg_type = "[INFO]";
+
+		document.getElementById("result").innerHTML =
+						msg_type + " " + msg.msg;
+	};
+
+	ws.onclose = function() {
+		ws.close();
+
+		document.getElementById("ws_status").innerHTML = "Disconnected";
+		document.getElementById("ws_status").style.color = "#880000";
+		ws_connected = false;
+		console.log("WebSocket Connection closed");
+	};
+
+	ws.onerror = function(e) {
+		console.log(e.msg);
+	};
+}
+
+function send_data(obj) {
+	var data;
+	var msg;
+
+	document.getElementById('result').innerHTML = "Sending data...";
+
+	obj.email = document.getElementById('email').value;
+	obj.uuid = document.getElementById('uuid').value;
+
+	data = JSON.stringify(obj);
+	msg = "Data has been transferred (" + data.length + " bytes)";
+
+	ws.send(data);
+	console.log(msg);
+}
+
+function get_files_url() {
+	var obj = new Object();
+
+	obj.file_data = "url";
+	obj.bfile = document.getElementById('bfileu').value;
+	obj.sfile = document.getElementById('sfileu').value;
+	obj.wfile = document.getElementById('wfileu').value;
+
+	send_data(obj);
+}
+
+function get_files_local() {
+	var bfile = document.getElementById('bfile').files[0];
+	var sfile = document.getElementById('sfile').files[0];
+	var wfile = document.getElementById('wfile').files[0];
+	var breader = new FileReader();
+	var sreader = new FileReader();
+	var wreader = new FileReader();
+
+	breader.readAsBinaryString(bfile);
+	sreader.readAsBinaryString(sfile);
+	wreader.readAsBinaryString(wfile);
+
+	wreader.onload = function() {
+		var obj = new Object();
+
+		obj.file_data = "embedded";
+		obj.bfile = btoa(breader.result);
+		obj.sfile = btoa(sreader.result);
+		obj.wfile = btoa(wreader.result);
+
+		send_data(obj);
+	};
+}
+
+function do_process() {
+	var url = document.getElementById('bfileu').value
+
+	if (url == "")
+		get_files_local();
+	else
+		get_files_url();
+}
+
+function do_close() {
+	ws.close();
+}
+
+</script>
+</head>
+<body style = "font-family: Arial">
+
+<big>WebSocket : </big><big id = "ws_status"></big>
+
+<h2>Credentials</h2>
+
+<table><tbody>
+	<tr>
+	<td align = "left">Email Addr </td>
+	<td align = "left"><input type = "email" size = "40" id = "email" />
+		</td>
+	</tr>
+
+	<tr>
+	<td align = "left">UUID </td>
+	<td align = "left"><input type = "text" size = "40" id = "uuid" /></td>
+	</tr>
+</tbody></table>
+
+<p />
+
+<h2>File Selection</h2>
+
+<table><tbody>
+	<tr>
+	<td align = "left">Benchmark audio File </td>
+	<td align = "right"><input type = "file" id = "bfile" /></td>
+	<td></td>
+	<td><input type = "url" size = "40" id = "bfileu"
+		placeholder = "Enter benchmark audio file URL" /></td>
+	</tr>
+
+	<tr>
+	<td align = "left">Sample audio File </td>
+	<td align = "right"><input type = "file" id = "sfile" /></td>
+	<td> OR &nbsp;&nbsp;&nbsp;&nbsp;</td>
+	<td><input type = "url" size = "40" id = "sfileu"
+		placeholder = "Enter sample audio file URL" /></td>
+	</tr>
+
+	<tr>
+	<td align = "left">Words file </td>
+	<td align = "right"><input type = "file" id = "wfile" /></td>
+	<td></td>
+	<td><input type = "url" size = "40" id = "wfileu"
+		placeholder = "Enter words file URL" /></td>
+	<tr>
+
+	<tr>
+	<td><br /><input type = "button" value = "Process"
+			onclick = "do_process()" /></td>
+	<td><br />
+		<input type = "button" value = "Connect"
+			onclick = "do_connect()" />
+		&nbsp;&nbsp;
+		<input type = "button" value = "Disconnect"
+			onclick = "do_close()" /></td>
+	</tr>
+</tbody></table>
+
+<hr />
+<p />
+
+<h2>Result</h2>
+
+<pre id = "result">
+</pre>
+
+</body>
+</html>
