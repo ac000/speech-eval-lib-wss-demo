@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta http-equiv = "Content-Type" content = "text/html; charset=UTF-8">
-<title>Speech Comparison</title>
+<title>WebSocket Speech Comparison Demo</title>
 
 <script language = "javascript" type = "text/javascript">
 
@@ -9,6 +9,7 @@
  * CHANGE ME 
  */
 var ws_server = "wss://localhost:12345/";
+
 var ws_connected = false;
 var ws;
 
@@ -125,6 +126,8 @@ function do_close() {
 </head>
 <body style = "font-family: Arial">
 
+<center><big><big>WebSocket Speech Comparison Demo</big></big></center>
+</p>
 <big>WebSocket : </big><big id = "ws_status"></big>
 
 <h2>Credentials</h2>
