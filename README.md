@@ -10,7 +10,7 @@ var ws_server = "wss://localhost:12345/";
 
 to the appropriate URL.
 
-Use your email address and the UUID your were provided with.
+Use your email address and the UUID you were provided with.
 
 You can use any audio codec that *ffmpeg* generally supports, it's been tested
 with at least; mp3, Opus & FLAC.
